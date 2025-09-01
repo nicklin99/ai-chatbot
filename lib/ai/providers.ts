@@ -3,7 +3,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
-import { gateway } from '@ai-sdk/gateway';
+// import { gateway } from '@ai-sdk/gateway';
 import {
   artifactModel,
   chatModel,
@@ -11,7 +11,14 @@ import {
   titleModel,
 } from './models.test';
 import { isTestEnvironment } from '../constants';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
+const qwen = createOpenAICompatible({
+  name: 'qwen',
+  apiKey: process.env.QWEN_API_KEY,
+  baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  includeUsage: true, // Include usage information in streaming responses
+});
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
@@ -23,12 +30,12 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': gateway.languageModel('xai/grok-2-vision-1212'),
-        'chat-model-reasoning': wrapLanguageModel({
-          model: gateway.languageModel('xai/grok-3-mini-beta'),
-          middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'title-model': gateway.languageModel('xai/grok-2-1212'),
-        'artifact-model': gateway.languageModel('xai/grok-2-1212'),
+        'title-model': qwen('qwen-flash'),
+        'artifact-model': qwen('qwen-flash'),
+        'qwen': qwen('qwen-flash'),
+      },
+      imageModels: {
+        // @ts-ignore
+        'small-model': qwen('wanx2.1-t2i-turbo'),
       },
     });

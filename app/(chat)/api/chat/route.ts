@@ -105,10 +105,11 @@ export async function POST(request: Request) {
     const chat = await getChatById({ id });
 
     if (!chat) {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
-
+      // const title = await generateTitleFromUserMessage({
+      //   message,
+      // });
+      const title = message.parts.find((part) => part.type === 'text')?.text || `${new Date().toLocaleString()}`;
+      // console.log("Generated title:", title);
       await saveChat({
         id,
         userId: session.user.id,
@@ -124,14 +125,14 @@ export async function POST(request: Request) {
     const messagesFromDb = await getMessagesByChatId({ id });
     const uiMessages = [...convertToUIMessages(messagesFromDb), message];
 
-    const { longitude, latitude, city, country } = geolocation(request);
+    // const { longitude, latitude, city, country } = geolocation(request);
 
-    const requestHints: RequestHints = {
-      longitude,
-      latitude,
-      city,
-      country,
-    };
+    // const requestHints: RequestHints = {
+    //   longitude,
+    //   latitude,
+    //   city,
+    //   country,
+    // };
 
     await saveMessages({
       messages: [
@@ -153,11 +154,11 @@ export async function POST(request: Request) {
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({ selectedChatModel, requestHints: {} as RequestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
+            (selectedChatModel === 'chat-model-reasoning')
               ? []
               : [
                   'getWeather',
@@ -191,6 +192,7 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
+        console.error("Stream finished, saving messages to DB...");
         await saveMessages({
           messages: messages.map((message) => ({
             id: message.id,
@@ -202,7 +204,8 @@ export async function POST(request: Request) {
           })),
         });
       },
-      onError: () => {
+      onError: (err) => {
+        console.error(err);
         return 'Oops, an error occurred!';
       },
     });
