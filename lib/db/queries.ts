@@ -66,7 +66,7 @@ export async function createUser(email: string, password: string) {
 export async function createGuestUser() {
   const email = `guest-${Date.now()}`;
   const password = generateHashedPassword(generateUUID());
-
+ 
   try {
     return await db.insert(user).values({ email, password }).returning({
       id: user.id,

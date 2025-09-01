@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
-
+import createNextIntlPlugin from 'next-intl/plugin';
+ 
 const nextConfig: NextConfig = {
   experimental: {
     ppr: true,
@@ -12,5 +13,5 @@ const nextConfig: NextConfig = {
     ],
   },
 };
-
-export default nextConfig;
+const withI18n = createNextIntlPlugin()
+export default withI18n(nextConfig);
