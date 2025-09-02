@@ -18,10 +18,10 @@ export default async function Layout({
 
   return (
     <>
-      {/* <Script
-        src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
+      <Script
+        src="https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.23.4/pyodide.min.js"
         strategy="beforeInteractive"
-      /> */}
+      />
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
           <AppSidebar user={session?.user} />
